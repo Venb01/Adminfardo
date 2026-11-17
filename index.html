@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#141d29">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Control de Fardos & Ventas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --denim-950:#141d29;
+  --denim-900:#1d2b3a;
+  --denim-800:#26394d;
+  --denim-700:#3f5872;
+  --denim-600:#5a7390;
+  --denim-300:#a9bcce;
+  --cream:#f3ead9;
+  --cream-dim:#e3d8c2;
+  --rust:#c4622d;
+  --rust-light:#e08148;
+  --brick:#a13d3d;
+  --brick-light:#c95b5b;
+  --thread:#dfc28a;
+  --ok:#5f8a5a;
+  --font-display:'Oswald',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --shadow-card:0 4px 14px rgba(20,29,41,.25);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--denim-950);
+  background-image:
+    radial-gradient(circle at 15% 8%, rgba(255,255,255,.025) 0, transparent 45%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,.012) 0px, rgba(255,255,255,.012) 1px, transparent 1px, transparent 9px);
+  color:var(--cream);
+  font-family:var(--font-body);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.03em;font-weight:600;margin:0;}
+.mono{font-family:var(--font-mono);}
+button{font-family:inherit;cursor:pointer;}
+::selection{background:var(--rust);color:var(--cream);}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--denim-900);}
+::-webkit-scrollbar-thumb{background:var(--denim-700);border-radius:6px;}
+
+.app{max-width:1180px;margin:0 auto;padding:28px 20px 80px;}
+
+/* HEADER */
+.masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:18px;border-bottom:2px dashed var(--denim-700);}
+.masthead .eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--rust-light);margin-bottom:6px;display:block;}
+.masthead h1{font-size:clamp(28px,5vw,42px);line-height:1;color:var(--cream);}
+.masthead h1 span{color:var(--rust-light);}
+.clock-date{text-align:right;font-family:var(--font-mono);font-size:13px;color:var(--denim-300);}
+.clock-date .time{font-size:22px;color:var(--cream);font-weight:700;}
+.masthead-actions{display:flex;gap:8px;align-items:center;}
+.icon-action-btn{background:var(--denim-900);border:1.5px solid var(--denim-700);color:var(--denim-300);border-radius:7px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s ease;}
+.icon-action-btn:hover{border-color:var(--rust);color:var(--cream);}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap;}
+.tab-btn{background:var(--denim-900);border:1.5px solid var(--denim-700);color:var(--denim-300);padding:10px 18px;border-radius:999px;font-family:var(--font-display);font-size:13px;letter-spacing:.06em;text-transform:uppercase;transition:all .15s ease;}
+.tab-btn:hover{border-color:var(--rust);color:var(--cream);}
+.tab-btn.active{background:var(--rust);border-color:var(--rust);color:var(--cream);}
+.view{display:none;}
+.view.active{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:26px;}
+.stat-card{background:var(--denim-900);border:1px solid var(--denim-700);border-radius:8px;padding:16px 18px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent,var(--rust));}
+.stat-card .label{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--denim-300);display:block;margin-bottom:8px;}
+.stat-card .value{font-family:var(--font-display);font-size:26px;color:var(--cream);line-height:1;}
+.stat-card .value small{font-size:14px;color:var(--denim-300);font-family:var(--font-body);}
+.stat-card.accent-rust{--accent:var(--rust);}
+.stat-card.accent-ok{--accent:var(--ok);}
+.stat-card.accent-brick{--accent:var(--brick-light);}
+.stat-card.accent-denim{--accent:var(--denim-600);}
+
+/* SECTION HEADERS */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.section-head h2{font-size:18px;color:var(--cream);display:flex;align-items:center;gap:10px;}
+.section-head h2::before{content:'';width:10px;height:10px;background:var(--rust);border-radius:2px;transform:rotate(45deg);flex-shrink:0;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:6px;padding:11px 20px;font-family:var(--font-display);font-size:13px;letter-spacing:.05em;text-transform:uppercase;transition:all .15s ease;white-space:nowrap;}
+.btn-primary{background:var(--rust);color:var(--cream);}
+.btn-primary:hover{background:var(--rust-light);}
+.btn-secondary{background:transparent;border:1.5px solid var(--denim-700);color:var(--cream);}
+.btn-secondary:hover{border-color:var(--cream);}
+.btn-danger{background:transparent;border:1.5px solid var(--brick);color:var(--brick-light);}
+.btn-danger:hover{background:var(--brick);color:var(--cream);}
+.btn-sm{padding:7px 13px;font-size:11px;}
+.btn:active{transform:scale(.97);}
+
+/* FARDO CARDS */
+.fardos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-bottom:30px;}
+.fardo-card{background:linear-gradient(160deg,var(--denim-800),var(--denim-900));border:1px solid var(--denim-700);border-radius:10px;padding:0;box-shadow:var(--shadow-card);position:relative;overflow:hidden;transition:transform .15s ease,border-color .15s ease;}
+.fardo-card:hover{border-color:var(--rust);}
+.fardo-card.agotado{opacity:.55;}
+.fardo-tag-top{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 16px 0;}
+.punch-hole{width:14px;height:14px;border-radius:50%;background:var(--denim-950);border:1px solid var(--denim-700);position:absolute;top:14px;left:14px;}
+.fardo-name{font-family:var(--font-display);font-size:17px;color:var(--cream);margin-left:26px;}
+.fardo-date{font-family:var(--font-mono);font-size:11px;color:var(--denim-300);margin-left:26px;margin-top:2px;display:block;}
+.fardo-status{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;padding:4px 9px;border-radius:999px;background:var(--ok);color:var(--denim-950);font-weight:700;}
+.fardo-status.agotado-badge{background:var(--brick-light);}
+.fardo-status.bajo-badge{background:var(--rust-light);color:var(--denim-950);}
+.fardo-body{padding:14px 16px 16px;}
+.fardo-divider{border-top:1.5px dashed var(--denim-700);margin:0 16px;}
+.fardo-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;padding:14px 16px;font-size:13px;}
+.fardo-metrics .fm{display:flex;flex-direction:column;gap:2px;}
+.fardo-metrics .fm-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--denim-300);font-family:var(--font-mono);}
+.fardo-metrics .fm-value{font-family:var(--font-display);font-size:16px;color:var(--cream);}
+.fardo-progress{height:7px;background:var(--denim-950);border-radius:4px;overflow:hidden;margin:0 16px 14px;}
+.fardo-progress-bar{height:100%;background:linear-gradient(90deg,var(--rust),var(--rust-light));border-radius:4px;transition:width .3s ease;}
+.fardo-actions{display:flex;gap:8px;padding:0 16px 16px;flex-wrap:wrap;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,14,20,.72);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(2px);}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--denim-900);border:1px solid var(--denim-700);border-radius:12px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:modalIn .2s ease;}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1.5px dashed var(--denim-700);}
+.modal-header h3{color:var(--cream);font-size:18px;}
+.modal-close{background:none;border:none;color:var(--denim-300);font-size:22px;line-height:1;padding:2px 6px;border-radius:6px;}
+.modal-close:hover{color:var(--cream);background:var(--denim-800);}
+.modal-body{padding:20px 22px 22px;}
+
+/* FORMS */
+.field{margin-bottom:16px;}
+.field label{display:block;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--denim-300);margin-bottom:6px;}
+.field input,.field select{width:100%;background:var(--denim-950);border:1.5px solid var(--denim-700);border-radius:7px;padding:11px 13px;color:var(--cream);font-family:var(--font-body);font-size:14px;transition:border-color .15s ease;}
+.field input:focus,.field select:focus{outline:none;border-color:var(--rust);}
+.field input[readonly]{color:var(--thread);border-color:var(--denim-800);background:var(--denim-900);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-hint{font-size:11px;color:var(--denim-600);margin-top:5px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+
+/* GANANCIA badge en modal venta */
+.ganancia-preview{
+  background:var(--denim-800);
+  border:1.5px solid var(--ok);
+  border-radius:8px;
+  padding:14px 16px;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.ganancia-preview .gp-label{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--denim-300);}
+.ganancia-preview .gp-value{font-family:var(--font-display);font-size:22px;color:var(--ok);}
+.ganancia-preview .gp-value.neg{color:var(--brick-light);}
+.ganancia-preview .gp-detail{font-size:11px;color:var(--denim-300);margin-top:2px;}
+
+/* VENTAS */
+.ventas-list{display:flex;flex-direction:column;gap:8px;}
+.venta-row{background:var(--denim-900);border:1px solid var(--denim-700);border-left:3px solid var(--rust);border-radius:8px;padding:13px 16px;display:grid;grid-template-columns:auto 1fr auto auto auto auto;gap:14px;align-items:center;font-size:13.5px;}
+.vr-time{font-family:var(--font-mono);font-size:11px;color:var(--denim-300);white-space:nowrap;}
+.vr-time .d{color:var(--cream);font-weight:700;display:block;}
+.vr-info{min-width:0;}
+.vr-fardo-name{color:var(--cream);font-weight:600;}
+.vr-fardo-sub{display:block;color:var(--denim-300);font-size:11px;font-family:var(--font-mono);margin-top:2px;}
+.vr-cant{font-family:var(--font-mono);color:var(--denim-300);white-space:nowrap;}
+.vr-precio{font-family:var(--font-display);color:var(--cream);white-space:nowrap;}
+.vr-ganancia{font-family:var(--font-display);white-space:nowrap;}
+.vr-ganancia.pos{color:var(--ok);}
+.vr-ganancia.neg{color:var(--brick-light);}
+.vr-actions{display:flex;gap:6px;}
+.icon-btn{background:transparent;border:1.5px solid var(--denim-700);color:var(--denim-300);border-radius:6px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.icon-btn:hover{border-color:var(--brick);color:var(--brick-light);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:50px 20px;color:var(--denim-600);border:1.5px dashed var(--denim-700);border-radius:10px;}
+.empty-state .icon{font-size:34px;margin-bottom:10px;display:block;}
+.empty-state p{margin:4px 0;font-size:14px;}
+
+/* REPORTES */
+.report-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:22px;}
+.rs-value.small{font-size:16px;}
+.report-summary{background:var(--cream);color:var(--denim-950);border-radius:10px;padding:24px;margin-bottom:20px;}
+.report-summary h3{color:var(--denim-950);font-size:20px;margin-bottom:16px;}
+.rs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;}
+.rs-label{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--denim-700);display:block;margin-bottom:4px;}
+.rs-value{font-family:var(--font-display);font-size:24px;color:var(--denim-950);}
+.rs-value.pos{color:var(--ok);}
+.rs-value.neg{color:var(--brick);}
+.table-wrap{overflow-x:auto;border:1px solid var(--denim-700);border-radius:10px;}
+table.data-table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px;}
+table.data-table th{background:var(--denim-800);color:var(--denim-300);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:10px 14px;}
+table.data-table td{padding:10px 14px;border-top:1px solid var(--denim-800);color:var(--cream);}
+table.data-table tr:hover td{background:var(--denim-900);}
+.td-ganancia.pos{color:var(--ok);font-family:var(--font-display);}
+.td-ganancia.neg{color:var(--brick-light);font-family:var(--font-display);}
+
+/* TOOLBAR */
+.helper-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
+.search-input{background:var(--denim-900);border:1.5px solid var(--denim-700);border-radius:7px;padding:9px 13px;color:var(--cream);font-size:13px;min-width:200px;}
+.search-input:focus{outline:none;border-color:var(--rust);}
+select.search-input{appearance:none;}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.filter-row .search-input{min-width:170px;flex:1;}
+.filter-row input[type="date"]{background:var(--denim-900);border:1.5px solid var(--denim-700);border-radius:7px;padding:9px 13px;color:var(--cream);font-size:13px;}
+
+/* MINI CHART */
+.chart-card{background:var(--denim-900);border:1px solid var(--denim-700);border-radius:10px;padding:18px 18px 10px;margin-bottom:26px;}
+.chart-card h3{font-size:14px;color:var(--cream);margin-bottom:14px;letter-spacing:.03em;}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;min-width:0;}
+.chart-bar{width:100%;max-width:26px;background:linear-gradient(180deg,var(--rust-light),var(--rust));border-radius:4px 4px 0 0;min-height:2px;transition:height .3s ease;}
+.chart-bar-label{font-family:var(--font-mono);font-size:9px;color:var(--denim-300);white-space:nowrap;}
+.chart-empty{color:var(--denim-600);font-size:13px;text-align:center;padding:20px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--denim-800);border:1px solid var(--rust);color:var(--cream);padding:13px 22px;border-radius:8px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:2000;opacity:0;pointer-events:none;transition:all .25s ease;display:flex;align-items:center;gap:10px;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+.toast .dot{width:8px;height:8px;border-radius:50%;background:var(--rust);flex-shrink:0;}
+.toast.ok .dot{background:var(--ok);}
+.toast.ok{border-color:var(--ok);}
+
+@media(max-width:640px){
+  .venta-row{grid-template-columns:1fr;gap:6px;}
+  .venta-row .vr-actions{justify-content:flex-end;}
+  .field-row{grid-template-columns:1fr;}
+}
+
+/* ===== MÓVIL + GASTOS ===== */
+button,input,select{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.tab-btn span{margin-right:6px;}
+.fab{position:fixed;right:16px;bottom:20px;z-index:900;background:var(--rust);color:var(--cream);border:none;border-radius:999px;padding:14px 22px;font-family:var(--font-display);font-size:15px;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.45);}
+.fab:active{transform:scale(.96);}
+.banner{background:var(--denim-800);border:1.5px dashed var(--rust);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--cream);cursor:pointer;}
+.gasto-form{background:var(--denim-900);border:1px solid var(--denim-700);border-radius:10px;padding:16px;margin-bottom:22px;display:grid;gap:10px;}
+.gasto-form input{background:var(--denim-950);border:1.5px solid var(--denim-700);border-radius:7px;padding:12px;color:var(--cream);font-size:16px;width:100%;}
+.gasto-form input:focus{outline:none;border-color:var(--rust);}
+.gasto-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.chip{background:var(--denim-950);border:1.5px solid var(--denim-700);color:var(--denim-300);border-radius:999px;padding:9px 16px;font-size:14px;}
+.chip.on{background:var(--rust);border-color:var(--rust);color:var(--cream);}
+.mes-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.mes-nav b{font-family:var(--font-display);text-transform:capitalize;font-size:18px;letter-spacing:.03em;}
+.gasto-row{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--denim-900);border:1px solid var(--denim-700);border-left:3px solid var(--brick-light);border-radius:8px;padding:12px 14px;font-size:14px;}
+.gasto-row small{display:block;color:var(--denim-300);font-family:var(--font-mono);font-size:11px;margin-top:2px;}
+@media(max-width:640px){
+  .app{padding:16px 14px calc(150px + env(safe-area-inset-bottom));}
+  .masthead{padding-bottom:12px;margin-bottom:16px;}
+  .tabs{position:fixed;left:0;right:0;bottom:0;margin:0;gap:0;flex-wrap:nowrap;background:var(--denim-900);border-top:1px solid var(--denim-700);z-index:900;padding:6px 4px calc(6px + env(safe-area-inset-bottom));}
+  .tab-btn{flex:1;border:none;border-radius:10px;padding:7px 2px;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:2px;background:transparent;}
+  .tab-btn span{font-size:19px;margin:0;}
+  .tab-btn.active{background:var(--denim-800);color:var(--rust-light);}
+  .fab{bottom:calc(84px + env(safe-area-inset-bottom));}
+  .toast{bottom:calc(90px + env(safe-area-inset-bottom));width:calc(100% - 28px);}
+  .modal-overlay{align-items:flex-end;padding:0;}
+  .modal{max-width:none;border-radius:16px 16px 0 0;max-height:92vh;}
+  input,select{font-size:16px !important;}
+  .btn{min-height:44px;justify-content:center;}
+  .fardo-actions .btn{flex:1;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="masthead">
+    <div class="title-block">
+      <span class="eyebrow">Control de inventario &amp; ventas</span>
+      <h1>FARDO<span>•</span>LIVE</h1>
+    </div>
+    <div class="masthead-actions">
+      <button class="icon-action-btn" onclick="exportData()" title="Exportar respaldo (JSON)">⬇️</button>
+      <button class="icon-action-btn" onclick="document.getElementById('importFile').click()" title="Importar respaldo (JSON)">⬆️</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    </div>
+    <div class="clock-date">
+      <span class="time" id="liveClock">--:--</span>
+      <div id="liveDate">--</div>
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="dashboard"><span>🏠</span>Resumen</button>
+    <button class="tab-btn" data-view="fardos"><span>📦</span>Fardos</button>
+    <button class="tab-btn" data-view="ventas"><span>🧾</span>Ventas</button>
+    <button class="tab-btn" data-view="gastos"><span>💸</span>Gastos</button>
+    <button class="tab-btn" data-view="reportes"><span>📊</span>Reportes</button>
+  </nav>
+
+  <section class="view active" id="view-dashboard"></section>
+  <section class="view" id="view-fardos"></section>
+  <section class="view" id="view-ventas"></section>
+  <section class="view" id="view-gastos"></section>
+  <section class="view" id="view-reportes"></section>
+</div>
+
+<!-- MODAL FARDO -->
+<div class="modal-overlay" id="modalFardo">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalFardoTitle">Añadir Fardo</h3>
+      <button class="modal-close" onclick="closeModal('modalFardo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="fardoEditId">
+      <div class="field">
+        <label>Nombre del Fardo</label>
+        <input type="text" id="fardoNombre" placeholder="Ej: Fardo Levi's #12">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date" id="fardoFecha">
+        </div>
+        <div class="field">
+          <label>Cantidad de Jeans</label>
+          <input type="number" id="fardoCantidad" placeholder="0" min="1" oninput="calcPrecioUnitario()">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Precio Total (Bs)</label>
+          <input type="number" id="fardoPrecioTotal" placeholder="0.00" min="0" step="0.01" oninput="calcPrecioUnitario()">
+        </div>
+        <div class="field">
+          <label>Precio Unitario (Bs) — por jean</label>
+          <input type="number" id="fardoPrecioUnit" readonly placeholder="Auto">
+          <div class="field-hint">Se calcula automáticamente</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modalFardo')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveFardo()">Guardar Fardo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VENTA -->
+<div class="modal-overlay" id="modalVenta">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalVentaTitle">Registrar Venta</h3>
+      <button class="modal-close" onclick="closeModal('modalVenta')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Fardo</label>
+        <select id="ventaFardo" onchange="precargarPrecio();updateVentaInfo()">
+          <option value="">— Selecciona un fardo —</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Cantidad vendida</label>
+          <input type="number" id="ventaCantidad" placeholder="0" min="1" oninput="updateVentaInfo()">
+        </div>
+        <div class="field">
+          <label>Precio venta por jean (Bs)</label>
+          <input type="number" id="ventaPrecioVenta" placeholder="0.00" min="0" step="0.01" oninput="updateVentaInfo()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Fecha de venta</label>
+        <input type="date" id="ventaFecha">
+      </div>
+
+      <!-- PREVIEW GANANCIA -->
+      <div class="ganancia-preview" id="gananciaPreview" style="display:none;">
+        <div>
+          <div class="gp-label">Ganancia estimada</div>
+          <div class="gp-detail" id="gananciaDetalle"></div>
+        </div>
+        <div class="gp-value" id="gananciaValor">Bs 0.00</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modalVenta')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveVenta()">Guardar venta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="fab" onclick="openAddVenta()">＋ Venta</button>
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+// ============================
+// ESTADO
+// ============================
+function cargar(k) { try { const d = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(d) ? d : []; } catch(e) { return []; } }
+let fardos = cargar('fardos');
+let ventas = cargar('ventas');
+let gastos = cargar('gastos');
+let mesSel = diaKey(new Date()).slice(0,7);
+let ventaEditId = '';
+const STOCK_BAJO_UMBRAL = 5;
+
+// Filtros de las vistas Fardos y Ventas (se mantienen en memoria mientras la app está abierta)
+let filtroFardos = { texto:'', estado:'todos' };
+let filtroVentas = { texto:'', desde:'', hasta:'' };
+
+function saveData() {
+  try {
+    localStorage.setItem('fardos', JSON.stringify(fardos));
+    localStorage.setItem('ventas', JSON.stringify(ventas));
+    localStorage.setItem('gastos', JSON.stringify(gastos));
+  } catch(e) { showToast('No se pudo guardar: almacenamiento lleno', false); }
+}
+
+// ============================
+// RESPALDO — EXPORTAR / IMPORTAR
+// ============================
+function exportData() {
+  const payload = { app: 'FARDO•LIVE', version: 2, exportedAt: new Date().toISOString(), fardos, ventas, gastos };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const fecha = today();
+  a.href = url;
+  a.download = `fardo-live-respaldo-${fecha}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  localStorage.setItem('lastBackup', Date.now());
+  showToast('Respaldo descargado ✓');
+  renderDashboard();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data.fardos) || !Array.isArray(data.ventas)) {
+        showToast('Archivo inválido: no tiene el formato esperado', false);
+        return;
+      }
+      const reemplazar = confirm('¿Reemplazar todos los datos actuales con este respaldo?\n\nAceptar = reemplazar todo\nCancelar = combinar con los datos actuales');
+      if (reemplazar) {
+        fardos = data.fardos;
+        ventas = data.ventas;
+        gastos = Array.isArray(data.gastos) ? data.gastos : [];
+      } else {
+        const idsFardos = new Set(fardos.map(f=>f.id));
+        const idsVentas = new Set(ventas.map(v=>v.id));
+        data.fardos.forEach(f => { if (!idsFardos.has(f.id)) fardos.push(f); });
+        data.ventas.forEach(v => { if (!idsVentas.has(v.id)) ventas.push(v); });
+        const idsG = new Set(gastos.map(g=>g.id));
+        (data.gastos || []).forEach(g => { if (!idsG.has(g.id)) gastos.push(g); });
+      }
+      saveData();
+      renderAll();
+      showToast('Respaldo importado ✓');
+    } catch (err) {
+      showToast('No se pudo leer el archivo JSON', false);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ============================
+// RELOJ
+// ============================
+function tickClock() {
+  const now = new Date();
+  document.getElementById('liveClock').textContent =
+    now.toLocaleTimeString('es-BO', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('liveDate').textContent =
+    now.toLocaleDateString('es-BO', {weekday:'long', day:'numeric', month:'long'});
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+// ============================
+// TABS
+// ============================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-' + btn.dataset.view).classList.add('active');
+    renderAll();
+  });
+});
+
+// ============================
+// TOAST
+// ============================
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast' + (ok ? ' ok' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================
+// MODAL
+// ============================
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// ============================
+// UTILIDADES
+// ============================
+function bs(n) { return 'Bs ' + Number(n).toFixed(2); }
+function today() { return diaKey(new Date()); }
+function esc(t) { return String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const activos = () => fardos.filter(f => !f.archivado);
+const mesDe = (iso) => diaKey(new Date(iso)).slice(0,7);
+function nombreMes(k) { const [y,m] = k.split('-').map(Number); return new Date(y, m-1, 1).toLocaleDateString('es-BO', {month:'long', year:'numeric'}); }
+// Resumen de un mes: ganancia de ventas − gastos (bolsas, cintas…) = ganancia neta
+function resumenMes(k) {
+  const vs = ventas.filter(v => mesDe(v.fecha) === k);
+  const gasto = gastos.filter(g => g.fecha.slice(0,7) === k).reduce((s,g) => s + g.monto, 0);
+  const ganancia = vs.reduce((s,v) => s + v.ganancia, 0);
+  return { k, cobrado: vs.reduce((s,v) => s + v.totalVenta, 0), ganancia, gasto, neta: ganancia - gasto };
+}
+function mesesLista() { return [...new Set([...ventas.map(v => mesDe(v.fecha)), ...gastos.map(g => g.fecha.slice(0,7))])].sort().reverse().map(resumenMes); }
+function ultimoPrecio(id) { const vs = ventas.filter(v => v.fardoId === id).sort((a,b) => new Date(b.fecha) - new Date(a.fecha)); return vs.length ? vs[0].precioVenta : ''; }
+function precargarPrecio() { const el = document.getElementById('ventaPrecioVenta'); if (!el.value) el.value = ultimoPrecio(document.getElementById('ventaFardo').value); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active')); });
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); }));
+
+// Clave de día local (para agrupar ventas por día, evita líos de zona horaria)
+function diaKey(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// Agrupa las ventas por día (más reciente primero), incluyendo desglose por fardo
+function ventasPorDia() {
+  const map = {};
+  ventas.forEach(v => {
+    const d = new Date(v.fecha);
+    const key = diaKey(d);
+    if (!map[key]) {
+      map[key] = { key, dateObj: new Date(d.getFullYear(), d.getMonth(), d.getDate()), cant:0, cobrado:0, ganancia:0, numVentas:0, porFardo:{} };
+    }
+    map[key].cant += v.cant;
+    map[key].cobrado += v.totalVenta;
+    map[key].ganancia += v.ganancia;
+    map[key].numVentas += 1;
+    if (!map[key].porFardo[v.fardoNombre]) map[key].porFardo[v.fardoNombre] = 0;
+    map[key].porFardo[v.fardoNombre] += v.cant;
+  });
+  return Object.values(map).sort((a,b) => b.dateObj - a.dateObj);
+}
+
+function getFardoById(id) { return fardos.find(f => f.id === id); }
+
+// Calcula precio unitario en modal fardo
+function calcPrecioUnitario() {
+  const cant = parseFloat(document.getElementById('fardoCantidad').value) || 0;
+  const total = parseFloat(document.getElementById('fardoPrecioTotal').value) || 0;
+  const unit = (cant > 0 && total > 0) ? (total / cant) : 0;
+  document.getElementById('fardoPrecioUnit').value = unit > 0 ? unit.toFixed(2) : '';
+}
+
+// Actualiza preview de ganancia en modal venta
+function updateVentaInfo() {
+  const fardoId = document.getElementById('ventaFardo').value;
+  const cant = parseFloat(document.getElementById('ventaCantidad').value) || 0;
+  const precioVenta = parseFloat(document.getElementById('ventaPrecioVenta').value) || 0;
+  const preview = document.getElementById('gananciaPreview');
+
+  if (!fardoId || cant <= 0 || precioVenta <= 0) {
+    preview.style.display = 'none';
+    return;
+  }
+  const fardo = getFardoById(fardoId);
+  if (!fardo) { preview.style.display = 'none'; return; }
+
+  const precioUnit = fardo.precioUnit;
+  const ganancia = (precioVenta - precioUnit) * cant;
+  const gValor = document.getElementById('gananciaValor');
+  const gDet = document.getElementById('gananciaDetalle');
+
+  gValor.textContent = bs(ganancia);
+  gValor.className = 'gp-value' + (ganancia >= 0 ? '' : ' neg');
+  gDet.textContent = `Venta ${bs(precioVenta)} − Costo ${bs(precioUnit)} = ${bs(precioVenta - precioUnit)} × ${cant} jeans`;
+  preview.style.display = 'flex';
+}
+
+// ============================
+// FARDOS — CRUD
+// ============================
+function openAddFardo() {
+  document.getElementById('modalFardoTitle').textContent = 'Añadir Fardo';
+  document.getElementById('fardoEditId').value = '';
+  document.getElementById('fardoNombre').value = '';
+  document.getElementById('fardoFecha').value = today();
+  document.getElementById('fardoCantidad').value = '';
+  document.getElementById('fardoPrecioTotal').value = '';
+  document.getElementById('fardoPrecioUnit').value = '';
+  openModal('modalFardo');
+}
+
+function openEditFardo(id) {
+  const f = getFardoById(id);
+  if (!f) return;
+  document.getElementById('modalFardoTitle').textContent = 'Editar Fardo';
+  document.getElementById('fardoEditId').value = f.id;
+  document.getElementById('fardoNombre').value = f.nombre;
+  document.getElementById('fardoFecha').value = f.fecha;
+  document.getElementById('fardoCantidad').value = f.cantidad;
+  document.getElementById('fardoPrecioTotal').value = f.precioTotal;
+  document.getElementById('fardoPrecioUnit').value = f.precioUnit.toFixed(2);
+  openModal('modalFardo');
+}
+
+function saveFardo() {
+  const nombre = document.getElementById('fardoNombre').value.trim();
+  const fecha = document.getElementById('fardoFecha').value;
+  const cantidad = parseInt(document.getElementById('fardoCantidad').value) || 0;
+  const precioTotal = parseFloat(document.getElementById('fardoPrecioTotal').value) || 0;
+
+  if (!nombre) { showToast('Escribe el nombre del fardo', false); return; }
+  if (cantidad <= 0) { showToast('Ingresa la cantidad de jeans', false); return; }
+  if (precioTotal <= 0) { showToast('Ingresa el precio total', false); return; }
+  if (!fecha) { showToast('Selecciona la fecha', false); return; }
+
+  const precioUnit = precioTotal / cantidad;
+  const editId = document.getElementById('fardoEditId').value;
+
+  if (editId) {
+    const idx = fardos.findIndex(f => f.id === editId);
+    if (idx !== -1) {
+      if (cantidad < fardos[idx].vendidos) { showToast(`Ya vendiste ${fardos[idx].vendidos} jeans: la cantidad no puede ser menor`, false); return; }
+      fardos[idx] = {...fardos[idx], nombre, fecha, cantidad, precioTotal, precioUnit};
+      // Las ventas de este fardo se actualizan con el nombre y costo vigentes
+      ventas.forEach(v => { if (v.fardoId === editId) { v.fardoNombre = nombre; v.precioUnit = precioUnit; v.ganancia = (v.precioVenta - precioUnit) * v.cant; } });
+    }
+    showToast('Fardo actualizado ✓');
+  } else {
+    fardos.push({
+      id: 'f_' + Date.now(),
+      nombre, fecha, cantidad, precioTotal, precioUnit,
+      vendidos: 0
+    });
+    showToast('Fardo añadido ✓');
+  }
+
+  saveData();
+  closeModal('modalFardo');
+  renderAll();
+}
+
+function archivarFardo(id, valor) {
+  const f = getFardoById(id); if (!f) return;
+  if (valor && !confirm('¿Archivar este fardo? Se oculta de la lista pero tu historial y ganancias se conservan.')) return;
+  f.archivado = valor;
+  saveData(); renderAll();
+  showToast(valor ? 'Fardo archivado' : 'Fardo restaurado');
+}
+function eliminarFardo(id) {
+  const n = ventas.filter(v => v.fardoId === id).length;
+  if (!confirm(`¿Eliminar definitivamente? Se borrarán también ${n} venta(s) y tus totales cambiarán.`)) return;
+  fardos = fardos.filter(f => f.id !== id);
+  ventas = ventas.filter(v => v.fardoId !== id);
+  saveData(); renderAll();
+  showToast('Fardo eliminado');
+}
+
+// ============================
+// VENTAS — CRUD
+// ============================
+function openAddVenta(prefardoId) {
+  // Llenar select de fardos
+  const sel = document.getElementById('ventaFardo');
+  sel.innerHTML = '<option value="">— Selecciona un fardo —</option>';
+  activos().forEach(f => {
+    const disp = f.cantidad - f.vendidos;
+    if (disp > 0) {
+      const op = document.createElement('option');
+      op.value = f.id;
+      op.textContent = `${f.nombre} (${disp} disponibles)`;
+      if (prefardoId && f.id === prefardoId) op.selected = true;
+      sel.appendChild(op);
+    }
+  });
+  document.getElementById('ventaCantidad').value = '';
+  document.getElementById('ventaPrecioVenta').value = '';
+  document.getElementById('ventaFecha').value = diaKey(new Date());
+  document.getElementById('gananciaPreview').style.display = 'none';
+  ventaEditId = '';
+  sel.disabled = false;
+  document.getElementById('modalVentaTitle').textContent = 'Registrar Venta';
+  openModal('modalVenta');
+  if (prefardoId) { precargarPrecio(); updateVentaInfo(); }
+}
+
+function openEditVenta(id) {
+  const v = ventas.find(x => x.id === id);
+  const f = v && getFardoById(v.fardoId);
+  if (!f) return;
+  const sel = document.getElementById('ventaFardo');
+  sel.innerHTML = `<option value="${f.id}">${esc(f.nombre)}</option>`;
+  sel.disabled = true;
+  ventaEditId = id;
+  document.getElementById('modalVentaTitle').textContent = 'Editar Venta';
+  document.getElementById('ventaCantidad').value = v.cant;
+  document.getElementById('ventaPrecioVenta').value = v.precioVenta;
+  document.getElementById('ventaFecha').value = diaKey(new Date(v.fecha));
+  openModal('modalVenta');
+  updateVentaInfo();
+}
+
+function saveVenta() {
+  const fardoId = document.getElementById('ventaFardo').value;
+  const cant = parseInt(document.getElementById('ventaCantidad').value) || 0;
+  const precioVenta = parseFloat(document.getElementById('ventaPrecioVenta').value) || 0;
+
+  if (!fardoId) { showToast('Selecciona un fardo', false); return; }
+  if (cant <= 0) { showToast('Ingresa la cantidad', false); return; }
+  if (precioVenta <= 0) { showToast('Ingresa el precio de venta', false); return; }
+
+  const fardo = getFardoById(fardoId);
+  if (!fardo) return;
+  const previa = ventaEditId ? ventas.find(v => v.id === ventaEditId) : null;
+  const disponibles = fardo.cantidad - fardo.vendidos + (previa ? previa.cant : 0);
+  if (cant > disponibles) { showToast(`Solo hay ${disponibles} disponibles en este fardo`, false); return; }
+
+  const precioUnit = fardo.precioUnit;
+  const ganancia = (precioVenta - precioUnit) * cant;
+  const totalVenta = precioVenta * cant;
+
+  // Usa la fecha elegida por el usuario, conservando la hora actual para el orden
+  const fechaInput = document.getElementById('ventaFecha').value;
+  let fecha;
+  if (fechaInput) {
+    const [y, m, d] = fechaInput.split('-').map(Number);
+    const ahora = new Date();
+    fecha = new Date(y, m - 1, d, ahora.getHours(), ahora.getMinutes(), ahora.getSeconds()).toISOString();
+  } else {
+    fecha = new Date().toISOString();
+  }
+
+  if (previa) { fardo.vendidos -= previa.cant; ventas = ventas.filter(v => v.id !== previa.id); }
+  ventas.push({
+    id: previa ? previa.id : 'v_' + Date.now(),
+    fardoId,
+    fardoNombre: fardo.nombre,
+    cant,
+    precioVenta,
+    precioUnit,
+    ganancia,
+    totalVenta,
+    fecha
+  });
+
+  // Actualizar vendidos en fardo
+  const idx = fardos.findIndex(f => f.id === fardoId);
+  fardos[idx].vendidos += cant;
+
+  saveData();
+  closeModal('modalVenta');
+  renderAll();
+  showToast(`Venta registrada | Ganancia: ${bs(ganancia)}`);
+}
+
+function deleteVenta(id) {
+  if (!confirm('¿Eliminar esta venta?')) return;
+  const venta = ventas.find(v => v.id === id);
+  if (venta) {
+    const idx = fardos.findIndex(f => f.id === venta.fardoId);
+    if (idx !== -1) fardos[idx].vendidos -= venta.cant;
+  }
+  ventas = ventas.filter(v => v.id !== id);
+  saveData();
+  renderAll();
+  showToast('Venta eliminada');
+}
+
+// ============================
+// RENDER DASHBOARD
+// ============================
+function renderDashboard() {
+  const totalFardos = activos().length;
+  const totalJeans = activos().reduce((s,f) => s + f.cantidad, 0);
+  const totalDisp = activos().reduce((s,f) => s + (f.cantidad - f.vendidos), 0);
+  const totalVentasBs = ventas.reduce((s,v) => s + v.totalVenta, 0);
+  const totalGanancia = ventas.reduce((s,v) => s + v.ganancia, 0);
+  const totalInvertido = fardos.reduce((s,f) => s + f.precioTotal, 0);
+
+  // Ventas de hoy
+  const hoyKey = diaKey(new Date());
+  const ventasHoy = ventas.filter(v => diaKey(new Date(v.fecha)) === hoyKey);
+  const cobradoHoy = ventasHoy.reduce((s,v)=>s+v.totalVenta,0);
+  const gananciaHoy = ventasHoy.reduce((s,v)=>s+v.ganancia,0);
+  const jeansHoy = ventasHoy.reduce((s,v)=>s+v.cant,0);
+
+  // Últimas 5 ventas
+  const ultimas = [...ventas].sort((a,b) => new Date(b.fecha)-new Date(a.fecha)).slice(0,5);
+
+  // Fardos con pocas unidades disponibles (alerta de reposición)
+  const fardosBajo = activos().filter(f => {
+    const disp = f.cantidad - f.vendidos;
+    return disp > 0 && disp <= STOCK_BAJO_UMBRAL;
+  });
+  const alertaStock = fardosBajo.length === 0 ? '' : `
+    <div class="chart-card" style="border-color:var(--rust);margin-bottom:20px;">
+      <h3>⚠️ Stock bajo — ${fardosBajo.length} fardo(s) por agotarse</h3>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;">
+        ${fardosBajo.map(f => `<div style="display:flex;justify-content:space-between;color:var(--denim-300)">
+          <span style="color:var(--cream)">${esc(f.nombre)}</span>
+          <span>quedan <b style="color:var(--rust-light)">${f.cantidad - f.vendidos}</b> jeans</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+
+  document.getElementById('view-dashboard').innerHTML = `
+    ${alertaStock}
+    ${bannerRespaldoHTML()}
+    ${mesCardHTML()}
+    <div class="stats-grid">
+      <div class="stat-card accent-denim">
+        <span class="label">Fardos activos</span>
+        <div class="value">${totalFardos}</div>
+      </div>
+      <div class="stat-card accent-denim">
+        <span class="label">Jeans disponibles</span>
+        <div class="value">${totalDisp} <small>/ ${totalJeans}</small></div>
+      </div>
+      <div class="stat-card accent-rust">
+        <span class="label">Total invertido</span>
+        <div class="value" style="font-size:20px">${bs(totalInvertido)}</div>
+      </div>
+      <div class="stat-card accent-rust">
+        <span class="label">Ventas totales</span>
+        <div class="value" style="font-size:20px">${bs(totalVentasBs)}</div>
+      </div>
+      <div class="stat-card accent-ok">
+        <span class="label">Ganancia bruta total</span>
+        <div class="value" style="font-size:20px;color:${totalGanancia>=0?'var(--ok)':'var(--brick-light)'}">${bs(totalGanancia)}</div>
+      </div>
+      <div class="stat-card accent-rust">
+        <span class="label">Cobrado hoy</span>
+        <div class="value" style="font-size:20px">${bs(cobradoHoy)} <small>/ ${jeansHoy} jeans</small></div>
+      </div>
+      <div class="stat-card accent-ok">
+        <span class="label">Ganancia hoy</span>
+        <div class="value" style="font-size:20px;color:${gananciaHoy>=0?'var(--ok)':'var(--brick-light)'}">${bs(gananciaHoy)}</div>
+      </div>
+    </div>
+
+    ${chartUltimos14DiasHTML()}
+
+    <div class="section-head"><h2>Últimas Ventas</h2></div>
+    ${ultimas.length === 0 ? `<div class="empty-state"><span class="icon">🧾</span><p>No hay ventas aún</p></div>` :
+      `<div class="ventas-list">${ultimas.map(v => ventaRowHTML(v)).join('')}</div>`}
+  `;
+}
+
+function mesCardHTML() {
+  const r = resumenMes(diaKey(new Date()).slice(0,7));
+  return `<div class="report-summary" style="margin-bottom:20px"><h3>📅 ${esc(nombreMes(r.k))}</h3>
+    <div class="rs-grid">
+      <div><span class="rs-label">Ganancia de ventas</span><span class="rs-value">${bs(r.ganancia)}</span></div>
+      <div><span class="rs-label">Gastos (bolsas, cintas…)</span><span class="rs-value neg">− ${bs(r.gasto)}</span></div>
+      <div><span class="rs-label">Ganancia neta del mes</span><span class="rs-value ${r.neta>=0?'pos':'neg'}">${bs(r.neta)}</span></div>
+    </div></div>`;
+}
+function bannerRespaldoHTML() {
+  if (!ventas.length && !fardos.length) return '';
+  const t = Number(localStorage.getItem('lastBackup') || 0);
+  const dias = t ? Math.floor((Date.now() - t) / 86400000) : null;
+  if (dias !== null && dias < 7) return '';
+  return `<div class="banner" onclick="exportData()">💾 ${dias === null ? 'Aún no has hecho un respaldo' : 'Último respaldo hace ' + dias + ' días'}. Toca aquí para descargarlo.</div>`;
+}
+
+// Mini gráfico de barras: cobrado por día en los últimos 14 días
+function chartUltimos14DiasHTML() {
+  const dias = [];
+  const hoy = new Date();
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - i);
+    dias.push({ key: diaKey(d), dateObj: d, cobrado: 0 });
+  }
+  const map = {};
+  dias.forEach(d => map[d.key] = d);
+  ventas.forEach(v => {
+    const key = diaKey(new Date(v.fecha));
+    if (map[key]) map[key].cobrado += v.totalVenta;
+  });
+  const max = Math.max(...dias.map(d => d.cobrado), 1);
+  const hayDatos = dias.some(d => d.cobrado > 0);
+
+  return `
+  <div class="chart-card">
+    <h3>📈 Cobrado por día — últimos 14 días</h3>
+    ${!hayDatos ? `<div class="chart-empty">Aún no hay ventas en este periodo</div>` : `
+    <div class="chart-bars">
+      ${dias.map(d => {
+        const h = Math.max((d.cobrado / max) * 100, 2);
+        const lbl = d.dateObj.toLocaleDateString('es-BO', {day:'numeric',month:'numeric'});
+        return `<div class="chart-bar-wrap" title="${bs(d.cobrado)}">
+          <div class="chart-bar" style="height:${h}%"></div>
+          <span class="chart-bar-label">${lbl}</span>
+        </div>`;
+      }).join('')}
+    </div>`}
+  </div>`;
+}
+
+// ============================
+// RENDER FARDOS
+// ============================
+function _renderFardos() {
+  const texto = filtroFardos.texto.trim().toLowerCase();
+  const filtrados = fardos.filter(f => {
+    const disp = f.cantidad - f.vendidos;
+    if (filtroFardos.estado === 'archivado' ? !f.archivado : f.archivado) return false;
+    if (texto && !f.nombre.toLowerCase().includes(texto)) return false;
+    if (filtroFardos.estado === 'stock' && disp <= 0) return false;
+    if (filtroFardos.estado === 'bajo' && !(disp > 0 && disp <= STOCK_BAJO_UMBRAL)) return false;
+    if (filtroFardos.estado === 'agotado' && disp > 0) return false;
+    return true;
+  });
+
+  const cards = fardos.length === 0
+    ? `<div class="empty-state"><span class="icon">📦</span><p>No hay fardos registrados</p><p style="font-size:12px;color:var(--denim-700)">Haz clic en "Añadir Fardo" para comenzar</p></div>`
+    : filtrados.length === 0
+      ? `<div class="empty-state"><span class="icon">🔍</span><p>Ningún fardo coincide con el filtro</p></div>`
+      : `<div class="fardos-grid">${filtrados.map(fardoCardHTML).join('')}</div>`;
+
+  document.getElementById('view-fardos').innerHTML = `
+    <div class="section-head">
+      <h2>Fardos</h2>
+      <button class="btn btn-primary" onclick="openAddFardo()">＋ Añadir Fardo</button>
+    </div>
+    <div class="filter-row">
+      <input type="text" class="search-input" data-keep="q" placeholder="🔍 Buscar fardo por nombre..." value="${esc(filtroFardos.texto)}" oninput="filtroFardos.texto=this.value; renderFardos();">
+      <select class="search-input" onchange="filtroFardos.estado=this.value; renderFardos();">
+        <option value="todos" ${filtroFardos.estado==='todos'?'selected':''}>Todos los estados</option>
+        <option value="stock" ${filtroFardos.estado==='stock'?'selected':''}>En stock</option>
+        <option value="bajo" ${filtroFardos.estado==='bajo'?'selected':''}>Stock bajo (≤ ${STOCK_BAJO_UMBRAL})</option>
+        <option value="agotado" ${filtroFardos.estado==='agotado'?'selected':''}>Agotados</option>
+        <option value="archivado" ${filtroFardos.estado==='archivado'?'selected':''}>Archivados</option>
+      </select>
+    </div>
+    ${cards}
+  `;
+}
+
+function fardoCardHTML(f) {
+  const disp = f.cantidad - f.vendidos;
+  const pct = f.cantidad > 0 ? Math.round((f.vendidos / f.cantidad) * 100) : 0;
+  const agotado = disp <= 0;
+  const bajo = !agotado && disp <= STOCK_BAJO_UMBRAL;
+  const fechaFmt = f.fecha ? new Date(f.fecha + 'T12:00:00').toLocaleDateString('es-BO', {day:'numeric',month:'short',year:'numeric'}) : '—';
+  const gananciaFardo = ventas.filter(v=>v.fardoId===f.id).reduce((s,v)=>s+v.ganancia,0);
+  const ingresoF = ventas.filter(v => v.fardoId === f.id).reduce((s,v) => s + v.totalVenta, 0);
+  const pctRec = f.precioTotal > 0 ? Math.round(ingresoF / f.precioTotal * 100) : 0;
+  const falta = f.precioTotal - ingresoF;
+  const promV = f.vendidos > 0 ? ingresoF / f.vendidos : 0;
+  const nEq = promV > 0 ? Math.ceil(falta / promV) : 0;
+  const recup = falta <= 0 ? `✅ Recuperada (${pctRec}%)` : (promV > 0 ? `${pctRec}% · ` + (nEq <= disp ? `faltan ${nEq} jeans` : '⚠ no alcanza a este precio') : `${pctRec}% · faltan ${bs(falta)}`);
+  const estadoBadge = agotado ? 'Agotado' : (bajo ? `⚠ Quedan ${disp}` : 'En stock');
+  const estadoClase = agotado ? 'agotado-badge' : (bajo ? 'bajo-badge' : '');
+
+  return `
+  <div class="fardo-card ${agotado?'agotado':''}">
+    <div class="punch-hole"></div>
+    <div class="fardo-tag-top">
+      <div>
+        <div class="fardo-name">${esc(f.nombre)}</div>
+        <span class="fardo-date">📅 ${fechaFmt}</span>
+      </div>
+      <span class="fardo-status ${estadoClase}">${estadoBadge}</span>
+    </div>
+    <div class="fardo-metrics">
+      <div class="fm"><span class="fm-label">Total jeans</span><span class="fm-value">${f.cantidad}</span></div>
+      <div class="fm"><span class="fm-label">Disponibles</span><span class="fm-value">${disp}</span></div>
+      <div class="fm"><span class="fm-label">Precio total</span><span class="fm-value" style="font-size:14px">${bs(f.precioTotal)}</span></div>
+      <div class="fm"><span class="fm-label">Precio unitario</span><span class="fm-value" style="font-size:14px;color:var(--thread)">${bs(f.precioUnit)}</span></div>
+      <div class="fm" style="grid-column:1/-1"><span class="fm-label">Ganancia acumulada</span><span class="fm-value ${gananciaFardo>=0?'profit-pos':'profit-neg'}">${bs(gananciaFardo)}</span></div>
+      <div class="fm" style="grid-column:1/-1"><span class="fm-label">Inversión recuperada</span><span class="fm-value" style="font-size:14px">${recup}</span></div>
+    </div>
+    <div class="fardo-divider"></div>
+    <div style="padding:10px 16px 4px;font-family:var(--font-mono);font-size:10px;color:var(--denim-300);">${pct}% vendido</div>
+    <div class="fardo-progress"><div class="fardo-progress-bar" style="width:${pct}%"></div></div>
+    <div class="fardo-actions">
+      ${!agotado && !f.archivado ? `<button class="btn btn-primary btn-sm" onclick="openAddVenta('${f.id}')">＋ Venta</button>` : ''}
+      <button class="btn btn-secondary btn-sm" onclick="openEditFardo('${f.id}')">✏️ Editar</button>
+      ${f.archivado ? `<button class="btn btn-secondary btn-sm" onclick="archivarFardo('${f.id}',false)">↩ Restaurar</button><button class="btn btn-danger btn-sm" onclick="eliminarFardo('${f.id}')">🗑</button>` : `<button class="btn btn-secondary btn-sm" onclick="archivarFardo('${f.id}',true)">📁 Archivar</button>`}
+    </div>
+  </div>`;
+}
+
+// ============================
+// RENDER VENTAS
+// ============================
+function _renderVentas() {
+  const texto = filtroVentas.texto.trim().toLowerCase();
+  let filtradas = ventas.filter(v => {
+    if (texto && !v.fardoNombre.toLowerCase().includes(texto)) return false;
+    if (filtroVentas.desde && diaKey(new Date(v.fecha)) < filtroVentas.desde) return false;
+    if (filtroVentas.hasta && diaKey(new Date(v.fecha)) > filtroVentas.hasta) return false;
+    return true;
+  });
+  const sorted = [...filtradas].sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
+
+  const totalFiltrado = sorted.reduce((s,v)=>s+v.totalVenta,0);
+  const gananciaFiltrado = sorted.reduce((s,v)=>s+v.ganancia,0);
+  const resumenFiltro = (texto || filtroVentas.desde || filtroVentas.hasta) && sorted.length > 0
+    ? `<div class="field-hint" style="margin-bottom:14px">Mostrando ${sorted.length} venta(s) · Cobrado ${bs(totalFiltrado)} · Ganancia ${bs(gananciaFiltrado)}</div>`
+    : '';
+
+  document.getElementById('view-ventas').innerHTML = `
+    <div class="section-head">
+      <h2>Ventas</h2>
+      <button class="btn btn-primary" onclick="openAddVenta()">＋ Añadir Venta</button>
+    </div>
+    <div class="filter-row">
+      <input type="text" class="search-input" data-keep="q" placeholder="🔍 Buscar por nombre de fardo..." value="${esc(filtroVentas.texto)}" oninput="filtroVentas.texto=this.value; renderVentas();">
+      <input type="date" value="${filtroVentas.desde}" onchange="filtroVentas.desde=this.value; renderVentas();" title="Desde">
+      <input type="date" value="${filtroVentas.hasta}" onchange="filtroVentas.hasta=this.value; renderVentas();" title="Hasta">
+      ${(filtroVentas.texto || filtroVentas.desde || filtroVentas.hasta) ? `<button class="btn btn-secondary btn-sm" onclick="filtroVentas={texto:'',desde:'',hasta:''}; renderVentas();">Limpiar filtros</button>` : ''}
+    </div>
+    ${resumenFiltro}
+    ${ventas.length === 0
+      ? `<div class="empty-state"><span class="icon">🧾</span><p>No hay ventas registradas</p></div>`
+      : sorted.length === 0
+        ? `<div class="empty-state"><span class="icon">🔍</span><p>Ninguna venta coincide con el filtro</p></div>`
+        : `<div class="ventas-list">${sorted.map(v => ventaRowHTML(v, true)).join('')}</div>`}
+  `;
+}
+
+function ventaRowHTML(v, showDelete=false) {
+  const d = new Date(v.fecha);
+  const hora = d.toLocaleTimeString('es-BO', {hour:'2-digit', minute:'2-digit'});
+  const dia = d.toLocaleDateString('es-BO', {day:'numeric', month:'short'});
+  const gPos = v.ganancia >= 0;
+
+  return `
+  <div class="venta-row">
+    <div class="vr-time"><span class="d">${dia}</span>${hora}</div>
+    <div class="vr-info">
+      <span class="vr-fardo-name">${esc(v.fardoNombre)}</span>
+      <span class="vr-fardo-sub">Costo unit: ${bs(v.precioUnit)} · Venta unit: ${bs(v.precioVenta)}</span>
+    </div>
+    <div class="vr-cant">${v.cant} jeans</div>
+    <div class="vr-precio">${bs(v.totalVenta)}</div>
+    <div class="vr-ganancia ${gPos?'pos':'neg'}">${gPos?'+':''}${bs(v.ganancia)}</div>
+    ${showDelete ? `<div class="vr-actions"><button class="icon-btn" onclick="openEditVenta('${v.id}')" title="Editar">✏️</button><button class="icon-btn" onclick="deleteVenta('${v.id}')" title="Eliminar">🗑</button></div>` : '<div></div>'}
+  </div>`;
+}
+
+// ============================
+// RENDER REPORTES
+// ============================
+function renderReportes() {
+  const totalInvertido = fardos.reduce((s,f)=>s+f.precioTotal,0);
+  const totalVentasBs = ventas.reduce((s,v)=>s+v.totalVenta,0);
+  const totalGanancia = ventas.reduce((s,v)=>s+v.ganancia,0);
+  const totalJeansVendidos = ventas.reduce((s,v)=>s+v.cant,0);
+
+  const gastosTotal = gastos.reduce((s,g) => s + g.monto, 0);
+  const meses = mesesLista();
+  // Estadísticas adicionales
+  const margenPromedio = totalVentasBs > 0 ? (totalGanancia / totalVentasBs * 100) : 0;
+  const ticketPromedio = ventas.length > 0 ? (totalVentasBs / ventas.length) : 0;
+  const porDia = ventasPorDia();
+  const mejorDia = porDia.length > 0 ? [...porDia].sort((a,b)=>b.ganancia-a.ganancia)[0] : null;
+  const promedioDiarioCobrado = porDia.length > 0 ? (totalVentasBs / porDia.length) : 0;
+
+  // Por fardo
+  const porFardo = fardos.map(f => {
+    const vs = ventas.filter(v => v.fardoId === f.id);
+    const vendidos = vs.reduce((s,v)=>s+v.cant,0);
+    const ingreso = vs.reduce((s,v)=>s+v.totalVenta,0);
+    const ganancia = vs.reduce((s,v)=>s+v.ganancia,0);
+    return {...f, vsVendidos: vendidos, vsIngreso: ingreso, vsGanancia: ganancia};
+  }).sort((a,b) => b.vsGanancia - a.vsGanancia);
+
+  document.getElementById('view-reportes').innerHTML = `
+    <div class="report-controls">
+      <button class="btn btn-secondary btn-sm" onclick="exportReportesCSV()">⬇️ Exportar reportes (CSV)</button>
+    </div>
+    <div class="report-summary">
+      <h3>📊 Resumen General</h3>
+      <div class="rs-grid">
+        <div><span class="rs-label">Invertido</span><span class="rs-value">${bs(totalInvertido)}</span></div>
+        <div><span class="rs-label">Cobrado total</span><span class="rs-value">${bs(totalVentasBs)}</span></div>
+        <div><span class="rs-label">Ganancia total</span><span class="rs-value ${totalGanancia>=0?'pos':'neg'}">${bs(totalGanancia)}</span></div>
+        <div><span class="rs-label">Gastos totales</span><span class="rs-value neg">${bs(gastosTotal)}</span></div>
+        <div><span class="rs-label">Ganancia neta</span><span class="rs-value ${totalGanancia-gastosTotal>=0?'pos':'neg'}">${bs(totalGanancia-gastosTotal)}</span></div>
+        <div><span class="rs-label">Jeans vendidos</span><span class="rs-value">${totalJeansVendidos}</span></div>
+        <div><span class="rs-label">Ventas registradas</span><span class="rs-value">${ventas.length}</span></div>
+        <div><span class="rs-label">Margen promedio</span><span class="rs-value ${margenPromedio>=0?'pos':'neg'}">${margenPromedio.toFixed(1)}%</span></div>
+        <div><span class="rs-label">Ticket promedio</span><span class="rs-value small">${bs(ticketPromedio)}</span></div>
+        <div><span class="rs-label">Cobrado prom. / día</span><span class="rs-value small">${bs(promedioDiarioCobrado)}</span></div>
+        <div><span class="rs-label">Mejor día (ganancia)</span><span class="rs-value small">${mejorDia ? mejorDia.dateObj.toLocaleDateString('es-BO',{day:'numeric',month:'short'}) + ' · ' + bs(mejorDia.ganancia) : '—'}</span></div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Resumen por Mes</h2></div>
+    <div class="table-wrap" style="margin-bottom:30px;">
+      <table class="data-table">
+        <thead><tr><th>Mes</th><th>Cobrado</th><th>Ganancia ventas</th><th>Gastos</th><th>Ganancia neta</th></tr></thead>
+        <tbody>
+          ${meses.length === 0 ? `<tr><td colspan="5" style="text-align:center;color:var(--denim-600)">Sin datos</td></tr>` :
+            meses.map(m => `<tr><td style="text-transform:capitalize">${esc(nombreMes(m.k))}</td><td>${bs(m.cobrado)}</td><td>${bs(m.ganancia)}</td><td>− ${bs(m.gasto)}</td><td class="td-ganancia ${m.neta>=0?'pos':'neg'}">${bs(m.neta)}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-head"><h2>Venta por Día</h2></div>
+    <div class="table-wrap" style="margin-bottom:30px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Ventas</th>
+            <th>Jeans vendidos</th>
+            <th>Detalle por fardo</th>
+            <th>Cobrado total</th>
+            <th>Ganancia total</th>
+            <th>Margen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${porDia.length === 0
+            ? `<tr><td colspan="7" style="text-align:center;color:var(--denim-600)">Sin ventas registradas</td></tr>`
+            : porDia.map(d => {
+                const fechaFmt = d.dateObj.toLocaleDateString('es-BO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+                const margen = d.cobrado > 0 ? (d.ganancia / d.cobrado * 100) : 0;
+                const detalleFardo = Object.entries(d.porFardo)
+                  .sort((a,b) => b[1]-a[1])
+                  .map(([nombre,cant]) => `${esc(nombre)}: ${cant}`)
+                  .join('<br>');
+                return `<tr>
+                  <td style="font-family:var(--font-mono);font-size:12px;text-transform:capitalize">${fechaFmt}</td>
+                  <td>${d.numVentas}</td>
+                  <td>${d.cant}</td>
+                  <td style="font-size:12px;line-height:1.6">${detalleFardo}</td>
+                  <td>${bs(d.cobrado)}</td>
+                  <td class="td-ganancia ${d.ganancia>=0?'pos':'neg'}">${bs(d.ganancia)}</td>
+                  <td class="td-ganancia ${margen>=0?'pos':'neg'}">${margen.toFixed(1)}%</td>
+                </tr>`;
+              }).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-head"><h2>Por Fardo</h2></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fardo</th>
+            <th>Fecha</th>
+            <th>Jeans total</th>
+            <th>Vendidos</th>
+            <th>P. unitario</th>
+            <th>Invertido</th>
+            <th>Ingreso ventas</th>
+            <th>Ganancia</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${porFardo.length === 0
+            ? `<tr><td colspan="8" style="text-align:center;color:var(--denim-600)">Sin datos</td></tr>`
+            : porFardo.map(f => {
+                const fechaFmt = f.fecha ? new Date(f.fecha+'T12:00:00').toLocaleDateString('es-BO',{day:'numeric',month:'short',year:'numeric'}) : '—';
+                return `<tr>
+                  <td>${esc(f.nombre)}${f.archivado ? ' 📁' : ''}</td>
+                  <td style="font-family:var(--font-mono);font-size:12px">${fechaFmt}</td>
+                  <td>${f.cantidad}</td>
+                  <td>${f.vsVendidos}</td>
+                  <td style="font-family:var(--font-mono)">${bs(f.precioUnit)}</td>
+                  <td>${bs(f.precioTotal)}</td>
+                  <td>${bs(f.vsIngreso)}</td>
+                  <td class="td-ganancia ${f.vsGanancia>=0?'pos':'neg'}">${bs(f.vsGanancia)}</td>
+                </tr>`;
+              }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// Exporta las tablas de Reportes (venta por día y por fardo) a un archivo CSV
+function exportReportesCSV() {
+  const porDia = ventasPorDia();
+  const porFardo = fardos.map(f => {
+    const vs = ventas.filter(v => v.fardoId === f.id);
+    return {
+      nombre: f.nombre,
+      fecha: f.fecha,
+      cantidad: f.cantidad,
+      vendidos: vs.reduce((s,v)=>s+v.cant,0),
+      precioUnit: f.precioUnit,
+      precioTotal: f.precioTotal,
+      ingreso: vs.reduce((s,v)=>s+v.totalVenta,0),
+      ganancia: vs.reduce((s,v)=>s+v.ganancia,0)
+    };
+  });
+
+  const esc = (v) => `"${String(v).replace(/"/g,'""')}"`;
+  let csv = 'VENTA POR DIA\n';
+  csv += 'Fecha,Ventas,Jeans vendidos,Cobrado,Ganancia\n';
+  porDia.forEach(d => {
+    const fecha = d.dateObj.toLocaleDateString('es-BO');
+    csv += [esc(fecha), d.numVentas, d.cant, d.cobrado.toFixed(2), d.ganancia.toFixed(2)].join(',') + '\n';
+  });
+  csv += '\nPOR MES\nMes,Cobrado,Ganancia ventas,Gastos,Ganancia neta\n';
+  mesesLista().forEach(m => { csv += [esc(m.k), m.cobrado.toFixed(2), m.ganancia.toFixed(2), m.gasto.toFixed(2), m.neta.toFixed(2)].join(',') + '\n'; });
+  csv += '\nPOR FARDO\n';
+  csv += 'Fardo,Fecha,Jeans total,Vendidos,Precio unitario,Invertido,Ingreso,Ganancia\n';
+  porFardo.forEach(f => {
+    csv += [esc(f.nombre), esc(f.fecha||''), f.cantidad, f.vendidos, f.precioUnit.toFixed(2), f.precioTotal.toFixed(2), f.ingreso.toFixed(2), f.ganancia.toFixed(2)].join(',') + '\n';
+  });
+
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fardo-live-reportes-${today()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Reporte CSV descargado ✓');
+}
+
+// ============================
+// GASTOS (bolsas, cintas…) — se descuentan de la ganancia del mes
+// ============================
+function cambiarMes(d) { const [y,m] = mesSel.split('-').map(Number); mesSel = diaKey(new Date(y, m-1+d, 1)).slice(0,7); renderGastos(); }
+function elegirChip(c) {
+  document.getElementById('gastoConcepto').value = c;
+  document.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x.dataset.c === c));
+  document.getElementById('gastoMonto').focus();
+}
+function saveGasto() {
+  const concepto = document.getElementById('gastoConcepto').value.trim();
+  const monto = parseFloat(document.getElementById('gastoMonto').value) || 0;
+  const fecha = document.getElementById('gastoFecha').value || today();
+  if (!concepto) { showToast('Elige o escribe el concepto', false); return; }
+  if (monto <= 0) { showToast('Ingresa el monto', false); return; }
+  gastos.push({ id: 'g_' + Date.now(), concepto, monto, fecha });
+  mesSel = fecha.slice(0,7);
+  saveData(); renderAll();
+  showToast('Gasto registrado ✓');
+}
+function deleteGasto(id) {
+  if (!confirm('¿Eliminar este gasto?')) return;
+  gastos = gastos.filter(g => g.id !== id);
+  saveData(); renderAll();
+  showToast('Gasto eliminado');
+}
+function renderGastos() {
+  const r = resumenMes(mesSel);
+  const lista = gastos.filter(g => g.fecha.slice(0,7) === mesSel).sort((a,b) => b.fecha.localeCompare(a.fecha) || b.id.localeCompare(a.id));
+  const porConcepto = {};
+  lista.forEach(g => porConcepto[g.concepto] = (porConcepto[g.concepto] || 0) + g.monto);
+  const conceptos = [...new Set(['Bolsas', 'Cintas', ...gastos.map(g => g.concepto)])];
+  document.getElementById('view-gastos').innerHTML = `
+    <div class="section-head"><h2>Nuevo gasto</h2></div>
+    <div class="gasto-form">
+      <div class="gasto-chips">${conceptos.map(c => `<button class="chip" data-c="${esc(c)}" onclick="elegirChip(this.dataset.c)">${esc(c)}</button>`).join('')}</div>
+      <input type="text" id="gastoConcepto" placeholder="Concepto (ej: Bolsas)">
+      <input type="number" id="gastoMonto" inputmode="decimal" placeholder="Monto (Bs)" min="0" step="0.01">
+      <input type="date" id="gastoFecha" value="${today()}">
+      <button class="btn btn-primary" onclick="saveGasto()">＋ Guardar gasto</button>
+    </div>
+    <div class="mes-nav">
+      <button class="btn btn-secondary btn-sm" onclick="cambiarMes(-1)">‹</button>
+      <b>${esc(nombreMes(mesSel))}</b>
+      <button class="btn btn-secondary btn-sm" onclick="cambiarMes(1)">›</button>
+    </div>
+    <div class="report-summary">
+      <div class="rs-grid">
+        <div><span class="rs-label">Ganancia de ventas</span><span class="rs-value">${bs(r.ganancia)}</span></div>
+        <div><span class="rs-label">Gastos del mes</span><span class="rs-value neg">− ${bs(r.gasto)}</span></div>
+        <div><span class="rs-label">Ganancia neta</span><span class="rs-value ${r.neta>=0?'pos':'neg'}">${bs(r.neta)}</span></div>
+      </div>
+      ${Object.keys(porConcepto).length ? `<div style="margin-top:14px;font-size:13px;color:var(--denim-700)">${Object.entries(porConcepto).map(([c,m]) => `${esc(c)}: <b>${bs(m)}</b>`).join(' &nbsp;|&nbsp; ')}</div>` : ''}
+    </div>
+    ${lista.length === 0 ? `<div class="empty-state"><span class="icon">💸</span><p>Sin gastos en este mes</p></div>` :
+      `<div class="ventas-list">${lista.map(g => `<div class="gasto-row"><div>${esc(g.concepto)}<small>${new Date(g.fecha + 'T12:00:00').toLocaleDateString('es-BO', {day:'numeric', month:'short'})}</small></div><div style="display:flex;align-items:center;gap:10px"><b style="font-family:var(--font-display);font-size:16px">${bs(g.monto)}</b><button class="icon-btn" onclick="deleteGasto('${g.id}')" title="Eliminar">🗑</button></div></div>`).join('')}</div>`}
+  `;
+}
+
+// Mantiene el cursor en el buscador mientras se vuelve a dibujar la lista
+function conservarFoco(viewId, fn) {
+  const a = document.activeElement, k = a && a.dataset ? a.dataset.keep : null, pos = k ? a.selectionStart : 0;
+  fn();
+  if (k) { const n = document.querySelector(`#${viewId} [data-keep="${k}"]`); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch(e) {} } }
+}
+function renderFardos() { conservarFoco('view-fardos', _renderFardos); }
+function renderVentas() { conservarFoco('view-ventas', _renderVentas); }
+
+// ============================
+// RENDER ALL
+// ============================
+function renderAll() {
+  renderDashboard();
+  renderFardos();
+  renderVentas();
+  renderGastos();
+  renderReportes();
+}
+
+renderAll();
+</script>
+</body>
+</html>
